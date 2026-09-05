@@ -1,0 +1,9 @@
+# Runtime uploaded files (avatars, asset photos/receipts, damage photos)
+backend-laravel/public/uploads/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

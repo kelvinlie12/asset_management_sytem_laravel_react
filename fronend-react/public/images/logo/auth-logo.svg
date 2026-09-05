@@ -1,0 +1,11 @@
+<svg width="231" height="48" viewBox="0 0 231 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="48" height="48" rx="13.5" fill="#465FFF"/>
+<g>
+<path d="M24 8.25L42 16.5L24 24.75L6 16.5L24 8.25Z" fill="#8FA4FF"/>
+<path d="M6 16.5L24 24.75L24 41.25L6 33L6 16.5Z" fill="white" fill-opacity="0.85"/>
+<path d="M24 24.75L42 16.5L42 33L24 41.25L24 24.75Z" fill="white" fill-opacity="0.55"/>
+<path d="M28.8 27.3L33.3 31.8L39.3 23.1" stroke="#465FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<text x="62" y="30" font-family="Inter, 'Segoe UI', sans-serif" font-size="24" font-weight="700" fill="white">Asset</text>
+<text x="64" y="42" font-family="Inter, 'Segoe UI', sans-serif" font-size="9" font-weight="600" letter-spacing="3" fill="white" fill-opacity="0.6">MANAGEMENT</text>
+</svg>
