@@ -34,6 +34,7 @@ class UpdateAssetRequest extends FormRequest
             'photo' => ['sometimes', 'nullable', 'file', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:8192'],
             'purchase_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'purchase_date' => ['sometimes', 'nullable', 'date'],
+            'placement_date' => ['sometimes', 'nullable', 'date'],
             'purchase_receipt' => ['sometimes', 'nullable', 'file', 'mimes:jpeg,png,jpg,gif,webp,pdf,doc,docx', 'max:8192'],
             'description' => ['sometimes', 'nullable', 'string'],
             'condition' => ['sometimes', Rule::in(Asset::CONDITIONS)],

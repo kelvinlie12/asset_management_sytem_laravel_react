@@ -68,6 +68,8 @@ class RolePermissionSeeder extends Seeder
         // Asset Damage Report (Barang Rusak)
         'damages.view',
         'damages.create',
+        'damages.update',
+        'damages.delete',
         // Vehicle Asset (Motor)
         'vehicles.view',
         'vehicles.create',
@@ -128,6 +130,8 @@ class RolePermissionSeeder extends Seeder
             'transfers.create',
             'damages.view',
             'damages.create',
+            'damages.update',
+            'damages.delete',
             'vehicles.view',
             'vehicles.create',
             'vehicles.update',

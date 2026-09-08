@@ -23,6 +23,7 @@ class AssetResource extends JsonResource
             'photo_url' => $this->photo ? url($this->photo) : null,
             'purchase_price' => $this->purchase_price,
             'purchase_date' => $this->purchase_date?->format('Y-m-d'),
+            'placement_date' => $this->placement_date?->format('Y-m-d'),
             'purchase_receipt' => $this->purchase_receipt,
             'purchase_receipt_url' => $this->purchase_receipt ? url($this->purchase_receipt) : null,
             'description' => $this->description,

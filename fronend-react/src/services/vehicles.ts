@@ -7,6 +7,7 @@ export interface Vehicle {
   id: number;
   asset_code: string;
   photo: string | null;
+  photo_url: string | null;
   brand: string;
   model: string;
   plate_number: string | null;

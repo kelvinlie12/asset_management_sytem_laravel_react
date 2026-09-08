@@ -22,6 +22,7 @@ class AssetDamageResource extends JsonResource
             'photo_url' => $this->photo_path ? url($this->photo_path) : null,
             'notes' => $this->notes,
             'asset' => $this->whenLoaded('asset', fn () => $this->asset ? new AssetResource($this->asset) : null),
+            'room' => $this->whenLoaded('room', fn () => $this->room ? new RoomResource($this->room) : null),
             'user' => $this->whenLoaded('user', fn () => $this->user ? new UserResource($this->user) : null),
             'responsible' => $this->whenLoaded('responsible', fn () => $this->responsible ? new UserResource($this->responsible) : null),
             'performed_by' => $this->whenLoaded('performedBy', fn () => $this->performedBy ? new UserResource($this->performedBy) : null),

@@ -15,11 +15,13 @@ import {
   TableRow,
 } from "../components/ui/table";
 import { useAuth } from "../context/AuthContext";
-import { PlusIcon, EyeIcon, AlertIcon } from "../icons";
+import { PlusIcon, EyeIcon, AlertIcon, PencilIcon, TrashBinIcon } from "../icons";
 import {
   fetchDamages,
   fetchDamage,
   createDamage,
+  updateDamage,
+  deleteDamage,
   type AssetDamage,
   type Paginated,
   type DamageFilters,
@@ -83,8 +85,13 @@ export default function Damages() {
 
   const addModal = useModal();
   const detailModal = useModal();
+  const editModal = useModal();
+  const deleteModal = useModal();
 
+  const [editing, setEditing] = useState<AssetDamage | null>(null);
+  const [deleting, setDeleting] = useState<AssetDamage | null>(null);
   const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState<string | null>(null);
 
   const loadDamages = useCallback(async () => {
     setLoading(true);
@@ -146,7 +153,6 @@ export default function Damages() {
     setError(null);
     try {
       const body: Record<string, unknown> = {
-        asset_id: payload.asset_id,
         damage_date: payload.damage_date,
         user_id: payload.user_id || null,
         responsible_id: payload.responsible_id || null,
@@ -156,27 +162,56 @@ export default function Damages() {
       if (payload.photo) {
         body.photo = payload.photo;
       }
-      await createDamage(body as Record<string, unknown> & { photo?: File });
-      await refresh();
-      try {
-        const resp = await fetchAsset(Number(payload.asset_id));
-        const asset = resp.data.asset;
-        showTempSuccess(
-          "Damage report recorded. Asset " +
-            `${asset?.asset_code || ""} now has status ` +
-            `${asset?.condition || "DAMAGED"} (${asset?.usage_status || "IN_STORAGE"}), ` +
-            "moved to storage.",
+      if (editing) {
+        await updateDamage(
+          editing.id,
+          body as Record<string, unknown> & { photo?: File },
         );
-      } catch {
-        showTempSuccess(
-          "Damage report recorded. Asset marked as DAMAGED and moved to storage.",
-        );
+        editModal.closeModal();
+        setEditing(null);
+        showTempSuccess("Damage report updated successfully.");
+        await refresh();
+      } else {
+        body.asset_id = payload.asset_id;
+        await createDamage(body as Record<string, unknown> & { photo?: File });
+        await refresh();
+        try {
+          const resp = await fetchAsset(Number(payload.asset_id));
+          const asset = resp.data.asset;
+          showTempSuccess(
+            "Damage report recorded. Asset " +
+              `${asset?.asset_code || ""} now has status ` +
+              `${asset?.condition || "DAMAGED"} (${asset?.usage_status || "IN_STORAGE"}), ` +
+              "moved to storage.",
+          );
+        } catch {
+          showTempSuccess(
+            "Damage report recorded. Asset marked as DAMAGED and moved to storage.",
+          );
+        }
+        addModal.closeModal();
       }
-      addModal.closeModal();
     } catch (err) {
       setError(extractError(err, "Failed to save damage report."));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleting) return;
+    setSubmitting("delete");
+    setError(null);
+    try {
+      await deleteDamage(deleting.id);
+      deleteModal.closeModal();
+      setDeleting(null);
+      showTempSuccess("Damage report deleted.");
+      await refresh();
+    } catch (err) {
+      setError(extractError(err, "Failed to delete damage report."));
+    } finally {
+      setSubmitting(null);
     }
   }
 
@@ -341,7 +376,7 @@ export default function Damages() {
                         {d.performed_by?.name || "-"}
                       </TableCell>
                       <TableCell className="px-5 py-4">
-                        <div className="flex items-center justify-end">
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             size="sm"
                             variant="outline"
@@ -353,6 +388,32 @@ export default function Damages() {
                           >
                             View
                           </Button>
+                          {canManage && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditing(d);
+                                  editModal.openModal();
+                                }}
+                                startIcon={<PencilIcon />}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setDeleting(d);
+                                  deleteModal.openModal();
+                                }}
+                                startIcon={<TrashBinIcon />}
+                              >
+                                Delete
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -396,14 +457,66 @@ export default function Damages() {
       </div>
 
       {canManage && (
-        <DamageModal
-          isOpen={addModal.isOpen}
-          onClose={addModal.closeModal}
-          saving={saving}
-          assets={reportableAssets}
-          users={users}
-          onSubmit={handleSaveDamage}
-        />
+        <>
+          <DamageModal
+            isOpen={addModal.isOpen}
+            onClose={addModal.closeModal}
+            saving={saving}
+            assets={reportableAssets}
+            users={users}
+            editing={null}
+            onSubmit={handleSaveDamage}
+          />
+          <DamageModal
+            isOpen={editModal.isOpen}
+            onClose={() => {
+              editModal.closeModal();
+              setEditing(null);
+            }}
+            saving={saving}
+            assets={assets}
+            users={users}
+            editing={editing}
+            onSubmit={handleSaveDamage}
+          />
+        </>
+      )}
+
+      {canManage && deleting && (
+        <Modal
+          isOpen={deleteModal.isOpen}
+          onClose={deleteModal.closeModal}
+          className="max-w-[450px] m-4"
+        >
+          <div className="no-scrollbar relative w-full max-w-[450px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900">
+            <h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Delete Damage Report
+            </h4>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete the damage report for{" "}
+              <span className="font-medium text-gray-700 dark:text-white/90">
+                {deleting.asset?.name || "this asset"}
+              </span>{" "}
+              ({deleting.damage_date || "-"})? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={deleteModal.closeModal}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={submitting === "delete"}
+                onClick={handleDelete}
+              >
+                {submitting === "delete" ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       <DetailModal
@@ -421,6 +534,7 @@ function DamageModal({
   saving,
   assets,
   users,
+  editing,
   onSubmit,
 }: {
   isOpen: boolean;
@@ -428,6 +542,7 @@ function DamageModal({
   saving: boolean;
   assets: Asset[];
   users: User[];
+  editing: AssetDamage | null;
   onSubmit: (payload: FormState) => void;
 }) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -435,10 +550,29 @@ function DamageModal({
 
   useEffect(() => {
     if (isOpen) {
-      setForm({ ...EMPTY_FORM, damage_date: new Date().toISOString().slice(0, 10) });
+      setForm(
+        editing
+          ? {
+              asset_id: String(editing.asset_id),
+              damage_date:
+                editing.damage_date ||
+                new Date().toISOString().slice(0, 10),
+              user_id: editing.user_id ? String(editing.user_id) : "",
+              responsible_id: editing.responsible_id
+                ? String(editing.responsible_id)
+                : "",
+              description: editing.description || "",
+              notes: editing.notes || "",
+              photo: null,
+            }
+          : {
+              ...EMPTY_FORM,
+              damage_date: new Date().toISOString().slice(0, 10),
+            },
+      );
       setFormError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, editing]);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -466,32 +600,50 @@ function DamageModal({
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-[560px] m-4">
       <div className="no-scrollbar max-h-[85vh] w-full max-w-[560px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900">
         <h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
-          Report Damage
+          {editing ? "Edit Damage Report" : "Report Damage"}
         </h4>
         <p className="mb-6 mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Recording damage marks the asset as{" "}
-          <span className="font-medium text-gray-700 dark:text-white/90">
-            DAMAGED
-          </span>
-          , sets it to{" "}
-          <span className="font-medium text-gray-700 dark:text-white/90">
-            IN_STORAGE
-          </span>{" "}
-          and moves it to a warehouse (Gudang).
+          {editing ? (
+            "Update the damage report details. The linked asset stays unchanged."
+          ) : (
+            <>
+              Recording damage marks the asset as{" "}
+              <span className="font-medium text-gray-700 dark:text-white/90">
+                DAMAGED
+              </span>
+              , sets it to{" "}
+              <span className="font-medium text-gray-700 dark:text-white/90">
+                IN_STORAGE
+              </span>{" "}
+              and moves it to a warehouse (Gudang).
+            </>
+          )}
         </p>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <Label>Asset</Label>
-            <Select
-              options={assets.map((a) => ({
-                value: String(a.id),
-                label: `${a.name} (${a.asset_code} — ${a.usage_status})`,
-              }))}
-              placeholder="Select asset to report"
-              defaultValue={form.asset_id}
-              onChange={(v) => set("asset_id", v)}
-            />
+            {editing ? (
+              <Input
+                type="text"
+                value={
+                  editing.asset
+                    ? `${editing.asset.name} (${editing.asset.asset_code})`
+                    : ""
+                }
+                disabled
+              />
+            ) : (
+              <Select
+                options={assets.map((a) => ({
+                  value: String(a.id),
+                  label: `${a.name} (${a.asset_code} — ${a.usage_status})`,
+                }))}
+                placeholder="Select asset to report"
+                defaultValue={form.asset_id}
+                onChange={(v) => set("asset_id", v)}
+              />
+            )}
           </div>
           <div>
             <Label>Damage Date</Label>
@@ -564,7 +716,11 @@ function DamageModal({
               Cancel
             </Button>
             <Button size="sm" disabled={saving}>
-              {saving ? "Saving..." : "Report Damage"}
+              {saving
+                ? "Saving..."
+                : editing
+                  ? "Save Changes"
+                  : "Report Damage"}
             </Button>
           </div>
         </form>

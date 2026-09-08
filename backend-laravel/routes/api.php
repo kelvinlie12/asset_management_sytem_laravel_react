@@ -97,6 +97,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/damages', [AssetDamageController::class, 'index'])->middleware('permission:damages.view');
         Route::post('/damages', [AssetDamageController::class, 'store'])->middleware('permission:damages.create');
         Route::get('/damages/{assetDamage}', [AssetDamageController::class, 'show'])->middleware('permission:damages.view');
+        Route::put('/damages/{assetDamage}', [AssetDamageController::class, 'update'])->middleware('permission:damages.update');
+        Route::delete('/damages/{assetDamage}', [AssetDamageController::class, 'destroy'])->middleware('permission:damages.delete');
 
         // Vehicle Asset (Motor) management
         Route::get('/vehicles', [VehicleController::class, 'index'])->middleware('permission:vehicles.view');

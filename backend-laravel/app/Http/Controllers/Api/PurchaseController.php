@@ -122,12 +122,7 @@ class PurchaseController extends Controller
      */
     private function nextAssetCode(): string
     {
-        $max = 0;
-        foreach (Asset::query()->pluck('asset_code') as $code) {
-            if (is_string($code) && preg_match('/^AST-(\d+)$/', $code, $m)) {
-                $max = max($max, (int) $m[1]);
-            }
-        }
+        $max = (int) substr(Asset::query()->where('asset_code', 'like', 'AST-%')->max('asset_code') ?? '', 4);
 
         do {
             $code = 'AST-'.str_pad(++$max, 3, '0', STR_PAD_LEFT);
@@ -141,12 +136,7 @@ class PurchaseController extends Controller
      */
     private function nextPurchaseNumber(): string
     {
-        $max = 0;
-        foreach (Purchase::query()->pluck('purchase_number') as $number) {
-            if (is_string($number) && preg_match('/^PCH-(\d+)$/', $number, $m)) {
-                $max = max($max, (int) $m[1]);
-            }
-        }
+        $max = (int) substr(Purchase::query()->where('purchase_number', 'like', 'PCH-%')->max('purchase_number') ?? '', 4);
 
         do {
             $number = 'PCH-'.str_pad(++$max, 4, '0', STR_PAD_LEFT);

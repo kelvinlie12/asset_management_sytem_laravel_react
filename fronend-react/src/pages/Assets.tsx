@@ -7,6 +7,7 @@ import Button from "../components/ui/button/Button";
 import Badge from "../components/ui/badge/Badge";
 import { Modal } from "../components/ui/modal";
 import { useModal } from "../hooks/useModal";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import {
   Table,
   TableBody,
@@ -122,6 +123,17 @@ export default function Assets() {
     page: 1,
     per_page: PER_PAGE,
   });
+
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebouncedValue(searchInput, 300);
+
+  useEffect(() => {
+    setFilters((prev) =>
+      prev.search === debouncedSearch
+        ? prev
+        : { ...prev, search: debouncedSearch, page: 1 },
+    );
+  }, [debouncedSearch]);
 
   const [selected, setSelected] = useState<Asset | null>(null);
 
@@ -297,8 +309,8 @@ export default function Assets() {
           <div className="flex flex-col gap-3 border-b border-gray-200 p-4 dark:border-gray-800 lg:flex-row lg:items-center lg:justify-between">
             <Input
               type="text"
-              value={filters.search || ""}
-              onChange={(e) => updateFilter("search", e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search by code, name, or description..."
               className="lg:max-w-[280px]"
             />

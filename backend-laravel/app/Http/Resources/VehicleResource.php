@@ -18,6 +18,9 @@ class VehicleResource extends JsonResource
             'id' => $this->id,
             'asset_code' => $this->asset_code,
             'photo' => $this->photo,
+            'photo_url' => $this->photo
+                ? (filter_var($this->photo, FILTER_VALIDATE_URL) ? $this->photo : url($this->photo))
+                : null,
             'brand' => $this->brand,
             'model' => $this->model,
             'plate_number' => $this->plate_number,

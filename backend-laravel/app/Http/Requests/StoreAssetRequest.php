@@ -32,6 +32,7 @@ class StoreAssetRequest extends FormRequest
             'photo' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:8192'],
             'purchase_price' => ['nullable', 'numeric', 'min:0'],
             'purchase_date' => ['nullable', 'date'],
+            'placement_date' => ['nullable', 'date'],
             'purchase_receipt' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,webp,pdf,doc,docx', 'max:8192'],
             'description' => ['nullable', 'string'],
             'condition' => ['required', Rule::in(Asset::CONDITIONS)],

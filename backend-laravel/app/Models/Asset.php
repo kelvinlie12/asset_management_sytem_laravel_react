@@ -39,6 +39,7 @@ class Asset extends Model
         'photo',
         'purchase_price',
         'purchase_date',
+        'placement_date',
         'purchase_receipt',
         'description',
         'condition',
@@ -58,6 +59,7 @@ class Asset extends Model
         return [
             'purchase_price' => 'decimal:2',
             'purchase_date' => 'date',
+            'placement_date' => 'date',
         ];
     }
 

@@ -65,7 +65,7 @@ class AssetTransferController extends Controller
             ]);
         }
 
-        $transfer = DB::transaction(function () use ($validated, $asset) {
+        $transfer = DB::transaction(function () use ($validated, $asset, $request) {
             $transfer = AssetTransfer::create([
                 'asset_id' => $asset->id,
                 'transfer_date' => $validated['transfer_date'],
@@ -76,7 +76,7 @@ class AssetTransferController extends Controller
                 'from_user_id' => $asset->assigned_user_id,
                 'to_user_id' => $validated['to_user_id'] ?? null,
                 'reason' => $validated['reason'] ?? null,
-                'performed_by_id' => $this->user()?->id,
+                'performed_by_id' => $request->user()?->id,
             ]);
 
             $asset->update([

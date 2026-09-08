@@ -26,6 +26,7 @@ class StoreAssetDamageRequest extends FormRequest
     {
         return [
             'asset_id' => ['required', Rule::exists('assets', 'id')],
+            'room_id' => ['nullable', Rule::exists('rooms', 'id')],
             'damage_date' => ['required', 'date'],
             'user_id' => ['nullable', Rule::exists('users', 'id')],
             'responsible_id' => ['nullable', Rule::exists('users', 'id')],

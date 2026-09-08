@@ -124,12 +124,7 @@ class VehicleController extends Controller
      */
     private function nextVehicleCode(): string
     {
-        $max = 0;
-        foreach (VehicleAsset::query()->pluck('asset_code') as $code) {
-            if (is_string($code) && preg_match('/^VHC-(\d+)$/', $code, $m)) {
-                $max = max($max, (int) $m[1]);
-            }
-        }
+        $max = (int) substr(VehicleAsset::query()->where('asset_code', 'like', 'VHC-%')->max('asset_code') ?? '', 4);
 
         do {
             $code = 'VHC-'.str_pad(++$max, 3, '0', STR_PAD_LEFT);

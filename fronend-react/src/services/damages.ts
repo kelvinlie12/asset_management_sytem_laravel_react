@@ -5,6 +5,8 @@ import type { User } from "./users";
 export interface AssetDamage {
   id: number;
   asset_id: number;
+  user_id: number | null;
+  responsible_id: number | null;
   damage_date: string | null;
   description: string;
   photo_path: string | null;
@@ -62,4 +64,25 @@ export function createDamage(
     }
   });
   return api.post<{ message: string; damage: AssetDamage }>("/damages", form);
+}
+
+export function updateDamage(
+  id: number,
+  payload: Record<string, unknown> & { photo?: File | null },
+) {
+  const form = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      form.append(key, value as Blob | string);
+    }
+  });
+  form.append("_method", "PUT");
+  return api.post<{ message: string; damage: AssetDamage }>(
+    `/damages/${id}`,
+    form,
+  );
+}
+
+export function deleteDamage(id: number) {
+  return api.delete(`/damages/${id}`);
 }

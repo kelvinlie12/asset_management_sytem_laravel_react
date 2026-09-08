@@ -17,6 +17,7 @@ class AssetDamage extends Model
      */
     protected $fillable = [
         'asset_id',
+        'room_id',
         'damage_date',
         'user_id',
         'responsible_id',
@@ -46,6 +47,16 @@ class AssetDamage extends Model
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class);
+    }
+
+    /**
+     * The room where the damage occurred (snapshot at report time).
+     *
+     * @return BelongsTo<Room, $this>
+     */
+    public function room(): BelongsTo
+    {
+        return $this->belongsTo(Room::class);
     }
 
     /**

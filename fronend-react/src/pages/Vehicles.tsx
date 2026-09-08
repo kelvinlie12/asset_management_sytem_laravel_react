@@ -7,6 +7,7 @@ import Button from "../components/ui/button/Button";
 import Badge from "../components/ui/badge/Badge";
 import { Modal } from "../components/ui/modal";
 import { useModal } from "../hooks/useModal";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import {
   Table,
   TableBody,
@@ -134,6 +135,17 @@ export default function Vehicles() {
     page: 1,
     per_page: PER_PAGE,
   });
+
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebouncedValue(searchInput, 300);
+
+  useEffect(() => {
+    setFilters((prev) =>
+      prev.search === debouncedSearch
+        ? prev
+        : { ...prev, search: debouncedSearch, page: 1 },
+    );
+  }, [debouncedSearch]);
 
   const [selected, setSelected] = useState<Vehicle | null>(null);
 
@@ -307,8 +319,8 @@ export default function Vehicles() {
           <div className="flex flex-col gap-3 border-b border-gray-200 p-4 dark:border-gray-800 lg:flex-row lg:items-center lg:justify-between">
             <Input
               type="text"
-              value={filters.search || ""}
-              onChange={(e) => updateFilter("search", e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search by code, plate, brand, or model..."
               className="lg:max-w-[300px]"
             />
@@ -396,9 +408,9 @@ export default function Vehicles() {
                       <TableRow key={v.id}>
                         <TableCell className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            {v.photo ? (
-                              <img
-                                src={v.photo}
+{v.photo_url || v.photo ? (
+                                <img
+                                  src={v.photo_url || v.photo || ""}
                                 alt={`${v.brand} ${v.model}`}
                                 className="h-10 w-10 rounded-full border border-gray-200 object-cover dark:border-gray-700"
                                 onError={(e) => {
@@ -1013,11 +1025,11 @@ function DetailModal({
               {loaded.assigned_user?.name || "-"}
             </p>
           </div>
-          {loaded.photo && (
+          {loaded.photo_url && (
             <div className="sm:col-span-2">
               <Label>Photo</Label>
               <img
-                src={loaded.photo}
+                src={loaded.photo_url}
                 alt={`${loaded.brand} ${loaded.model}`}
                 className="mt-1 h-40 w-full rounded-lg border border-gray-200 object-cover dark:border-gray-700"
                 onError={(e) => {
