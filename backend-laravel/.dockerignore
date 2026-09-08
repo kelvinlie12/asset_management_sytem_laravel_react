@@ -1,0 +1,15 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+vendor
+node_modules
+public/uploads
+storage/logs
+storage/framework/sessions/*
+storage/framework/cache/*
+storage/framework/views/*
+tests
+phpunit.xml
+docker-compose.yml
